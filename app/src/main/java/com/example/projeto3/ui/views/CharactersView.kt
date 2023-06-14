@@ -2,8 +2,8 @@ package com.example.projeto3.ui.views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -29,54 +28,63 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
+import androidx.navigation.NavController
 import com.example.projeto3.R
 import com.example.projeto3.data.Character
-import com.example.projeto3.network.BASE_URL
+import coil.compose.rememberImagePainter
+import com.example.projeto3.Destination
+
 
 @Composable
 fun CharactersView(
-    CharactersViewModel: CharactersViewModel = viewModel()
+    charactersViewModel: CharactersViewModel = viewModel(),
+    navController: NavController
 ) {
-    val uiState by CharactersViewModel.uiState.collectAsState()
-    when(uiState){
+    val uiState by charactersViewModel.uiState.collectAsState()
+
+    when (uiState) {
         is CharactersUiState.Loading -> LoadingScreen()
-        is CharactersUiState.Success -> CharactersList((uiState as CharactersUiState.Success).characters)
+        is CharactersUiState.Success -> {
+            val characters = (uiState as CharactersUiState.Success).characters
+            CharactersList(characters = characters, navigateToCharacterDetails = { characterId ->
+                navController.navigate(Destination.CharacterDetails.createRoute(characterId))
+            })
+        }
         is CharactersUiState.Error -> ErrorScreen()
     }
 }
 
 @Composable
 fun CharactersList(
-    characters: List<Character>
+    characters: List<Character>,
+    navigateToCharacterDetails: (Int) -> Unit
 ) {
     LazyVerticalGrid(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.DarkGray),
         columns = GridCells.Fixed(2)
-    ){
-        items(characters){  character ->
-            CharacterEntry(character = character)
+    ) {
+        items(characters) { character ->
+            CharacterEntry(character = character) {
+                navigateToCharacterDetails(character.id)
+            }
         }
     }
 }
 
 @Composable
 fun CharacterEntry(
-    character: Character
+    character: Character,
+    onItemClick: () -> Unit
 ) {
     val density = LocalDensity.current.density
     val width = remember { mutableStateOf(0F) }
@@ -85,38 +93,37 @@ fun CharacterEntry(
         modifier = Modifier
             .padding(6.dp)
             .height(200.dp)
-            .width(200.dp),
+            .width(200.dp)
+            .clickable { onItemClick() },
         elevation = CardDefaults.cardElevation(8.dp)
     ) {
         Box {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(character.imageUrl)
-                    .crossfade(true)
-                    .build(),
-                placeholder = painterResource(R.drawable.got_placeholder),
+            Image(
+                painter = rememberImagePainter(data = character.imageUrl),
                 contentDescription = character.fullName,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
+                    .height(150.dp)
                     .clip(RectangleShape)
                     .onGloballyPositioned {
                         width.value = it.size.width / density
                         height.value = it.size.height / density
                     }
             )
-            Box(modifier = Modifier
-                .size(
-                    width = width.value.dp,
-                    height = height.value.dp
-                )
-                .background(
-                    Brush.verticalGradient(
-                        listOf(Color.Transparent, Color.Black),
-                        200F,
-                        475F
+            Box(
+                modifier = Modifier
+                    .size(
+                        width = width.value.dp,
+                        height = height.value.dp
                     )
-                )
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black),
+                            startY = 200F,
+                            endY = 475F
+                        )
+                    )
             )
             Text(
                 modifier = Modifier.align(Alignment.BottomCenter),

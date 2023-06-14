@@ -12,32 +12,30 @@ import retrofit2.HttpException
 import java.io.IOException
 
 sealed interface CharactersUiState {
-    object Loading: CharactersUiState
-
-    data class Success(val characters: List<Character>): CharactersUiState
-
-    object Error: CharactersUiState
+    object Loading : CharactersUiState
+    data class Success(val characters: List<Character>) : CharactersUiState
+    object Error : CharactersUiState
 }
 
-class CharactersViewModel() : ViewModel() {
+class CharactersViewModel : ViewModel() {
 
-    private var _uiState: MutableStateFlow<CharactersUiState> = MutableStateFlow(CharactersUiState.Loading)
+    private val _uiState: MutableStateFlow<CharactersUiState> = MutableStateFlow(CharactersUiState.Loading)
     val uiState: StateFlow<CharactersUiState> = _uiState.asStateFlow()
 
     init {
         getCharacters()
     }
 
-    private fun getCharacters(){
+    private fun getCharacters() {
         viewModelScope.launch {
             try {
-                _uiState.value = CharactersUiState.Success(GameOfThronesApi.retrofitService.getCharacters())
-            }catch (e: IOException){
+                val characters = GameOfThronesApi.retrofitService.getCharacters()
+                _uiState.value = CharactersUiState.Success(characters)
+            } catch (e: IOException) {
                 _uiState.value = CharactersUiState.Error
-            }catch (e: HttpException){
+            } catch (e: HttpException) {
                 _uiState.value = CharactersUiState.Error
             }
         }
     }
-
 }
