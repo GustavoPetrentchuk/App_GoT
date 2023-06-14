@@ -5,7 +5,6 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
-import retrofit2.create
 import retrofit2.http.GET
 
 const val BASE_URL = "https://thronesapi.com/"
@@ -19,13 +18,13 @@ private val retrofit = Retrofit.Builder()
     .addConverterFactory(MoshiConverterFactory.create(moshi))
     .build()
 
-interface RickAndMortyApiService {
+interface GameOfThronesApiService {
     @GET("api/v2/Characters")
     suspend fun getCharacters(): List<Character>
 }
 
-object RickAndMortyApi {
-    val retrofitService: RickAndMortyApiService by lazy {
-        retrofit.create(RickAndMortyApiService::class.java)
+object GameOfThronesApi {
+    val retrofitService: GameOfThronesApiService by lazy {
+        retrofit.create(GameOfThronesApiService::class.java)
     }
 }

@@ -1,2 +1,7 @@
-package com.example.projeto3.ui.views
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 
+@Composable
+fun ShowSuccessMessage() {
+    Text(text = "Deu certo")
+}

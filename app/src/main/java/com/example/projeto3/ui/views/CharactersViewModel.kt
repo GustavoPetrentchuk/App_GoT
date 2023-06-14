@@ -3,7 +3,7 @@ package com.example.projeto3.ui.views
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.projeto3.data.Character
-import com.example.projeto3.network.RickAndMortyApi
+import com.example.projeto3.network.GameOfThronesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -19,7 +19,7 @@ sealed interface CharactersUiState {
     object Error: CharactersUiState
 }
 
-class CharactersViewModel: ViewModel() {
+class CharactersViewModel() : ViewModel() {
 
     private var _uiState: MutableStateFlow<CharactersUiState> = MutableStateFlow(CharactersUiState.Loading)
     val uiState: StateFlow<CharactersUiState> = _uiState.asStateFlow()
@@ -31,7 +31,7 @@ class CharactersViewModel: ViewModel() {
     private fun getCharacters(){
         viewModelScope.launch {
             try {
-                _uiState.value = CharactersUiState.Success(RickAndMortyApi.retrofitService.getCharacters())
+                _uiState.value = CharactersUiState.Success(GameOfThronesApi.retrofitService.getCharacters())
             }catch (e: IOException){
                 _uiState.value = CharactersUiState.Error
             }catch (e: HttpException){
@@ -39,4 +39,5 @@ class CharactersViewModel: ViewModel() {
             }
         }
     }
+
 }

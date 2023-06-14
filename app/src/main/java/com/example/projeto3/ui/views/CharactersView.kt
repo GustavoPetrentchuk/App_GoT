@@ -47,7 +47,6 @@ import com.example.projeto3.data.Character
 import com.example.projeto3.network.BASE_URL
 
 @Composable
-
 fun CharactersView(
     CharactersViewModel: CharactersViewModel = viewModel()
 ) {
